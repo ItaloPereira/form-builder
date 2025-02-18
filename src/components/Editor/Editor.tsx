@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
@@ -8,18 +8,55 @@ import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 
 import EditorDndWrapper from './EditorDndWrapper';
-import EditorSortableAccordion from './EditorSortableAccordion';
+import EditorFieldItem from './EditorFieldItem';
 
 import type { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 
+import { useForm } from 'react-hook-form';
 import { useAppContext } from '@/context/useAppContext';
-import { generateUniqueId } from '@/utils/uid';
+import { generateUniqueId, sortFormDataByOrder } from '@/utils/functions';
+
+import type { FormData } from '@/types/form';
+
+interface FormValues {
+  [key: string]: string;
+}
 
 const Editor = () => {
-  const { state } = useAppContext();
+  const { state, saveFormData } = useAppContext();
+  const [items, setItems] = useState(sortFormDataByOrder(state.formData));
 
-  const [items, setItems] = useState(state.formData);
+  const { handleSubmit, control, watch, formState: { errors, isDirty } } = useForm<FormValues>();
+
+  const onSubmit = useCallback((data: FormValues) => {
+    const formData = Object.entries(data).map(([key, value]) => {
+      const id = key.split('-')[0];
+      const selectedItem = items.find((item) => item.id === id) as FormData;
+      const order = selectedItem.order || 0;
+
+      return {
+        id,
+        title: value,
+        order
+      }
+    });
+
+    saveFormData(formData);
+  }, [items, saveFormData]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const interval = setInterval(() => {
+      console.log('save');
+      handleSubmit(onSubmit)();
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+    }
+  }, [isDirty, handleSubmit, onSubmit]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -46,22 +83,29 @@ const Editor = () => {
       {
         id: newId,
         order: items.length,
-        title: 'New Field'
+        title: ''
       }
     ]);
   }
 
   return (
-    <Stack spacing={5}>
+    <Stack 
+      spacing={5} 
+      component="form" 
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+    >
       {items.length > 0 && (
         <EditorDndWrapper handleDragEnd={handleDragEnd} items={items}>
           <Stack spacing={2}>
             {items.map((item) => (
-              <EditorSortableAccordion key={item.id} id={item.id} title={item.title}>
-                <Typography>
-                  {item.title}
-                </Typography>
-              </EditorSortableAccordion>
+              <EditorFieldItem
+                key={item.id}
+                data={item}
+                watch={watch}
+                errors={errors}
+                control={control}
+              />
             ))}
           </Stack>
         </EditorDndWrapper>
@@ -81,10 +125,12 @@ const Editor = () => {
         >
           Add Field
         </Button>
+
         <Button
           variant="contained"
           endIcon={<SaveIcon />}
-          // onClick={handleSave}
+          disabled={!isDirty || state.saving}
+          type="submit"
         >
           Save
         </Button>

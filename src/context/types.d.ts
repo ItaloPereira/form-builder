@@ -4,6 +4,7 @@ export interface AppState {
   formData: FormData[];
   fetching: boolean;
   saving: boolean;
-  errorFetching: string | null;
-  errorSaving: string | null;
+  errorFetching?: string;
+  errorSaving?: string;
+  saved: boolean;
 }

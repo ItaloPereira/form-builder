@@ -30,6 +30,8 @@ export function AppProvider({ children }: AppProviderProps) {
   };
 
   const saveFormData = async (data: FormData[]) => {
+    updateData({ saving: true, saved: false, errorSaving: undefined });
+
     try {
       await simulateDelay();
       simulateError('saving data');
@@ -38,10 +40,10 @@ export function AppProvider({ children }: AppProviderProps) {
         setStorageData<FormData[]>(data);
       }
 
-      updateData({ formData: data, saving: false, errorSaving: null });
+      updateData({ formData: data, saving: false, saved: true, errorSaving: undefined });
     } catch (error) {
       console.error('Error saving data:', error);
-      updateData({ formData: [], saving: false, errorSaving: 'Error saving data' });
+      updateData({ formData: [], saving: false, saved: false, errorSaving: 'Error saving data' });
     }
   };
 

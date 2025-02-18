@@ -19,8 +19,9 @@ export const initialState: AppState = {
   formData: [],
   fetching: true,
   saving: false,
-  errorFetching: null,
-  errorSaving: null,
+  errorFetching: undefined,
+  errorSaving: undefined,
+  saved: false,
 };
 
 export function appReducer(
