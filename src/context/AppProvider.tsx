@@ -37,10 +37,10 @@ export function AppProvider({ children }: AppProviderProps) {
         setStorageData<Data>(data);
       }
 
-      updateData({ data, isLoading: false });
+      updateData({ data, saving: false, errorSaving: null });
     } catch (error) {
       console.error('Error saving data:', error);
-      updateData({ data: [], isLoading: false, error: 'Error saving data' });
+      updateData({ data: [], saving: false, errorSaving: 'Error saving data' });
     }
   };
 
@@ -58,9 +58,9 @@ export function AppProvider({ children }: AppProviderProps) {
         initializeStorage();
         const data = getStorageData<Data>();
 
-        updateData({ data, isLoading: false });
+        updateData({ data, fetching: false });
       } catch (error) {
-        updateData({ data: [], isLoading: false, error: 'Error fetching data' });
+        updateData({ data: [], fetching: false, errorFetching: 'There was an error fetching the data' });
         console.error('Error fetching data:', error);
       }
     };

@@ -2,6 +2,8 @@ export type Data = string[];
 
 export interface AppState {
   data: Data;
-  isLoading: boolean;
-  error: string | null;
+  fetching: boolean;
+  saving: boolean;
+  errorFetching: string | null;
+  errorSaving: string | null;
 }

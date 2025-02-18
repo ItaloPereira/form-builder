@@ -16,8 +16,10 @@ type AppActions = SaveDataAction | UpdateDataAction;
 
 export const initialState: AppState = {
   data: [],
-  isLoading: true,
-  error: null,
+  fetching: true,
+  saving: false,
+  errorFetching: null,
+  errorSaving: null,
 };
 
 export function appReducer(
