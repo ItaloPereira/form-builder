@@ -10,7 +10,8 @@ import {
   initializeStorage
 } from '@/utils/storage';
 
-import type { AppState, Data } from './types';
+import type { AppState } from './types';
+import type { FormData } from '@/types/form';
 
 interface AppProviderProps {
   children: ReactNode;
@@ -28,19 +29,19 @@ export function AppProvider({ children }: AppProviderProps) {
     });
   };
 
-  const saveFormData = async (data: Data) => {
+  const saveFormData = async (data: FormData[]) => {
     try {
       await simulateDelay();
       simulateError('saving data');
 
       if (data) {
-        setStorageData<Data>(data);
+        setStorageData<FormData[]>(data);
       }
 
-      updateData({ data, saving: false, errorSaving: null });
+      updateData({ formData: data, saving: false, errorSaving: null });
     } catch (error) {
       console.error('Error saving data:', error);
-      updateData({ data: [], saving: false, errorSaving: 'Error saving data' });
+      updateData({ formData: [], saving: false, errorSaving: 'Error saving data' });
     }
   };
 
@@ -56,11 +57,11 @@ export function AppProvider({ children }: AppProviderProps) {
         simulateError('fetching data');
 
         initializeStorage();
-        const data = getStorageData<Data>();
+        const formData = getStorageData<FormData[]>();
 
-        updateData({ data, fetching: false });
+        updateData({ formData, fetching: false });
       } catch (error) {
-        updateData({ data: [], fetching: false, errorFetching: 'There was an error fetching the data' });
+        updateData({ formData: [], fetching: false, errorFetching: 'There was an error fetching the data' });
         console.error('Error fetching data:', error);
       }
     };

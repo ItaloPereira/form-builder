@@ -1,9 +1,10 @@
 import { createContext, useContext } from 'react';
-import type { AppState, Data } from './types';
+import type { AppState } from './types';
+import type { FormData } from '@/types/form';
 
 export interface AppContextProps {
   state: AppState;
-  saveFormData: (data: Data) => void;
+  saveFormData: (formData: FormData[]) => void;
 }
 
 export const AppContext = createContext<AppContextProps | undefined>(undefined);

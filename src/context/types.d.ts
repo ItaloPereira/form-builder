@@ -1,7 +1,7 @@
-export type Data = string[];
+import { FormData } from "@/types/form";
 
 export interface AppState {
-  data: Data;
+  formData: FormData[];
   fetching: boolean;
   saving: boolean;
   errorFetching: string | null;

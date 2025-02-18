@@ -5,11 +5,11 @@ import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 
-import Editor from '@/components/Editor';
-import Preview from '@/components/Preview';
-import ToggleView from '@/components/ToggleView';
-import FetchingError from '@/components/FetchingError';
-import FormSkeleton from '@/components/FormSkeleton';
+import Editor from '@/components/Editor/Editor';
+import Preview from '@/components/Preview/Preview';
+import ToggleView from '@/components/global/ToggleView';
+import FetchingError from '@/components/global/FetchingError';
+import FormSkeleton from '@/components/global/FormSkeleton';
 
 import { useQueryParam } from '@/hooks/useQueryParam';
 import { useAppContext } from '@/context/useAppContext';

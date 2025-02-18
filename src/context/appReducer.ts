@@ -1,10 +1,11 @@
 import { SAVE_FORM_DATA, UPDATE_DATA } from './actionTypes';
 
-import type { AppState, Data } from './types';
+import type { AppState } from './types';
+import type { FormData } from '@/types/form';
 
 interface SaveDataAction {
   type: typeof SAVE_FORM_DATA;
-  payload: Data;
+  payload: FormData[];
 };
 
 interface UpdateDataAction {
@@ -15,7 +16,7 @@ interface UpdateDataAction {
 type AppActions = SaveDataAction | UpdateDataAction;
 
 export const initialState: AppState = {
-  data: [],
+  formData: [],
   fetching: true,
   saving: false,
   errorFetching: null,
@@ -30,7 +31,7 @@ export function appReducer(
     case SAVE_FORM_DATA:
       return {
         ...state,
-        data: action.payload,
+        formData: action.payload,
       };
     case UPDATE_DATA:
       return {
