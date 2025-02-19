@@ -5,6 +5,7 @@ import type { FormData } from '@/types/form';
 export interface AppContextProps {
   state: AppState;
   saveFormData: (formData: FormData[]) => void;
+  updateData: (state: Partial<AppState>) => void;
 }
 
 export const AppContext = createContext<AppContextProps | undefined>(undefined);

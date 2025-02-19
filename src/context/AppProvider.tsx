@@ -50,6 +50,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const value: AppContextProps = {
     state,
     saveFormData,
+    updateData,
   };
 
   useEffect(() => {

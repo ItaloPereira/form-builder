@@ -9,3 +9,7 @@ export const generateUniqueId = (prefix?: string) => {
 export const sortFormDataByOrder = (items: FormData[]) => {
   return items.sort((a, b) => a.order - b.order);
 }
+
+export const sortFormDataByOrderWithoutHidden = (items: FormData[]) => {
+  return items.filter((item) => !item.hidden).sort((a, b) => a.order - b.order);
+}

@@ -3,9 +3,13 @@ import { useState, useEffect, useCallback } from 'react';
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import CircularProgress from "@mui/material/CircularProgress";
+import Fade from "@mui/material/Fade";
 
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 
 import EditorDndWrapper from './EditorDndWrapper';
 import EditorFieldItem from './EditorFieldItem';
@@ -24,32 +28,64 @@ interface FormValues {
 }
 
 const Editor = () => {
-  const { state, saveFormData } = useAppContext();
+  const { state, saveFormData, updateData } = useAppContext();
   const [items, setItems] = useState(sortFormDataByOrder(state.formData));
+  const [showSaved, setShowSaved] = useState(false);
 
   const { handleSubmit, control, watch, formState: { errors, isDirty } } = useForm<FormValues>();
+  const allFields = watch(); 
 
-  const onSubmit = useCallback((data: FormValues) => {
-    const formData = Object.entries(data).map(([key, value]) => {
-      const id = key.split('-')[0];
-      const selectedItem = items.find((item) => item.id === id) as FormData;
-      const order = selectedItem.order || 0;
+  useEffect(() => {
+    if (state.saved) {
+      setShowSaved(true);
+      const timer = setTimeout(() => {
+        setShowSaved(false);
+        updateData({ saved: false });
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [state.saved, updateData]);
 
-      return {
-        id,
-        title: value,
-        order
+  const getUpdatedItems = useCallback((data: FormValues) => {
+    const fieldIds = new Set(
+      Object.keys(data).map(key => key.split('-')[0])
+    );
+
+    const formattedData: FormData[] = Array.from(fieldIds).map(fieldId => {
+      const type = (data[`${fieldId}-type`] || 'text') as FormData['type'];
+
+      const fieldData: FormData = {
+        id: fieldId,
+        order: items.find(item => item.id === fieldId)?.order ?? 0,
+        title: data[`${fieldId}-title`] || '',
+        type,
+        hidden: Boolean(data[`${fieldId}-hidden`]),
+        helperText: data[`${fieldId}-helper`] || '',
+        required: Boolean(data[`${fieldId}-required`]),
+        isParagraph: Boolean(data[`${fieldId}-isParagraph`]),
+        options: data[`${fieldId}-options`] || '',
+      };
+
+      if (type === 'number') {
+        fieldData.min = data[`${fieldId}-min`] ? Number(data[`${fieldId}-min`]) : undefined;
+        fieldData.max = data[`${fieldId}-max`] ? Number(data[`${fieldId}-max`]) : undefined;
       }
+
+      return fieldData;
     });
 
-    saveFormData(formData);
-  }, [items, saveFormData]);
+    return formattedData;
+  }, [items]);
+
+  const onSubmit = useCallback((data: FormValues) => {
+    const formattedData = getUpdatedItems(data);
+    saveFormData(formattedData);
+  }, [saveFormData, getUpdatedItems]);
 
   useEffect(() => {
     if (!isDirty) return;
 
     const interval = setInterval(() => {
-      console.log('save');
       handleSubmit(onSubmit)();
     }, 5000);
 
@@ -77,21 +113,27 @@ const Editor = () => {
   }
 
   const handleAddField = () => {
+    const updatedItems = getUpdatedItems(allFields);
     const newId = generateUniqueId('field');
     setItems([
-      ...items,
+      ...updatedItems,
       {
         id: newId,
         order: items.length,
-        title: ''
+        title: '',
+        required: true,
+        hidden: false,
+        helperText: '',
+        type: 'text',
+        isParagraph: false,
       }
     ]);
   }
 
   return (
-    <Stack 
-      spacing={5} 
-      component="form" 
+    <Stack
+      spacing={5}
+      component="form"
       onSubmit={handleSubmit(onSubmit)}
       noValidate
     >
@@ -117,23 +159,48 @@ const Editor = () => {
         </Typography>
       )}
 
-      <Stack direction="row" gap={2}>
-        <Button
-          variant="outlined"
-          endIcon={<AddIcon />}
-          onClick={handleAddField}
-        >
-          Add Field
-        </Button>
+      <Stack gap={2}>
+        <Stack direction="row" gap={2}>
+          <Button
+            variant="outlined"
+            endIcon={<AddIcon />}
+            onClick={handleAddField}
+          >
+            Add Field
+          </Button>
 
-        <Button
-          variant="contained"
-          endIcon={<SaveIcon />}
-          disabled={!isDirty || state.saving}
-          type="submit"
-        >
-          Save
-        </Button>
+          <Button
+            variant="contained"
+            endIcon={<SaveIcon />}
+            disabled={!isDirty || state.saving}
+            type="submit"
+          >
+            Save
+          </Button>
+        </Stack>
+
+        {state.saving && (
+          <Stack direction="row" spacing={1} alignItems="center">
+            <CircularProgress size={20} />
+            <Typography color="text.secondary">Auto saving...</Typography>
+          </Stack>
+        )}
+
+        {!state.saving && !state.errorSaving && (
+          <Fade in={showSaved} timeout={500} unmountOnExit>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <CheckCircleIcon color="success" />
+              <Typography color="success">Saved</Typography>
+            </Stack>
+          </Fade>
+        )}
+
+        {state.errorSaving && (
+          <Stack direction="row" spacing={1} alignItems="center">
+            <ErrorIcon color="error" />
+            <Typography color="error">{state.errorSaving}</Typography>
+          </Stack>
+        )}
       </Stack>
     </Stack>
   );
